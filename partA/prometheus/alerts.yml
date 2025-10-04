@@ -1,0 +1,26 @@
+groups:
+- name: app
+  rules:
+  - alert: AppHighErrorRate
+    expr: (sum(rate(http_requests_total{code=~"5.."}[5m])) / sum(rate(http_requests_total[5m]))) > 0.05
+    for: 10m
+    labels: {severity: page}
+    annotations:
+      summary: "5xx error rate > 5% (for 10m)"
+      description: "The rate of 5xx errors within 5 minutes is > 5% and has been going on for 10 minutes."
+
+  - alert: AppHighLatencyP95
+    expr: histogram_quantile(0.95, sum by (le) (rate(request_duration_seconds_bucket[5m]))) > 0.5
+    for: 10m
+    labels: {severity: ticket}
+    annotations:
+      summary: "p95 latency > 500 ms (for 10m)"
+      description: "p95 response time > 500 ms for 10 min"
+
+  - alert: AppTargetDown
+    expr: up == 0
+    for: 2m
+    labels: {severity: page}
+    annotations:
+      summary: "Target down (for 2m)"
+      description: "At least one target is unavailable for 2 minutes"
